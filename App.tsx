@@ -12,7 +12,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function App() {
 
   const [thoughts, setThoughts] = useState<Thought[]>([
-    { id: '1', title: 'Idea for a short story about a lighthouse keeper', details: '' },
+    { id: '1', title: 'Idea for a story about a lighthouse keeper', details: '' },
     { id: '2', title: 'Buy groceries: eggs, oat milk, coffee', details: ''},
     { id: '3', title: 'How did the Romans actually build roads that lasted', details: '' },
     { id: '4', title: 'Who sang the opening song from Insidious 2?', details: '' },
