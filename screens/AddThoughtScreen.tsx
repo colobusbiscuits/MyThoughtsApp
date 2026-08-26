@@ -1,18 +1,19 @@
 import {useState} from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from './types';
+import type { RootStackParamList, Thought, Category } from './types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AddThought'> & {
-    addThought: (title: string) => void;
+    addThought: (title: string, category: Category) => void;
 };
 
-export default function AddThoughtScreen({ navigation, addThought }: Props) {
+export default function AddThoughtScreen({ navigation, route, addThought }: Props) {
+    const { category } = route.params;
     const [text, setText] = useState('');
 
     const save = () => {
         if (!text.trim()) return;
-        addThought(text.trim());
+        addThought(text.trim(), category);
         navigation.goBack();
     };
 
@@ -21,7 +22,7 @@ export default function AddThoughtScreen({ navigation, addThought }: Props) {
             <TextInput
             value={text}
             onChangeText={setText}
-            placeholder="What's on your mind?"
+            placeholder={`New ${category.toLowerCase()}...`}
             placeholderTextColor = "#888"
             style={styles.input}
             multiline
@@ -34,7 +35,7 @@ export default function AddThoughtScreen({ navigation, addThought }: Props) {
     );
 }
     const styles = StyleSheet.create({
-        container: { flex: 1, padding: 20 },
+        container: { flex: 1, padding: 20 , backgroundColor: '#1a1d27'},
         input: {
             minHeight: 120,
             borderWidth: 1,
@@ -43,6 +44,7 @@ export default function AddThoughtScreen({ navigation, addThought }: Props) {
             padding: 12,
             fontSize: 16,
             textAlignVertical: 'top',
+            color: '#fff'
         },
         saveButton: {
             marginTop: 16,

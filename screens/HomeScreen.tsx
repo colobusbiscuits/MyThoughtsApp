@@ -4,27 +4,31 @@ import { StatusBar } from 'expo-status-bar';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, Thought } from './types';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Home'> & {
-    thoughts: Thought[];
+type Props = NativeStackScreenProps<RootStackParamList, 'CategoryList'> & {
+  thoughts: Thought[];
 };
 
-export default function HomeScreen({ navigation, thoughts }: Props) {
+export default function HomeScreen({ navigation, route, thoughts }: Props) {
+  const { category } = route.params;
+  const filtered = thoughts.filter((t) => t.category === category);
 
   return (
     <View style={styles.container}>
       <FlatList
-      data = {thoughts}
-      keyExtractor={(item) => item.id}
-      style={styles.list}
-      contentContainerStyle={styles.listContent}
-      renderItem={({ item}) => (
-        <Pressable onPress={() => navigation.navigate('Detail', { thoughtId: item.id })}>
-        <Text style={styles.thoughtItem}>{item.title}</Text>
-        </Pressable>
-      )}
+        data={filtered}
+        keyExtractor={(item) => item.id}
+        style={styles.list}
+        contentContainerStyle={styles.listContent}
+        renderItem={({ item }) => (
+          <Pressable onPress={() => navigation.navigate('Detail', { thoughtId: item.id })}>
+            <Text style={styles.thoughtItem}>{item.title}</Text>
+          </Pressable>
+        )}
       />
       <StatusBar style="auto" />
-      <Pressable style={styles.fab} onPress={() => navigation.navigate('AddThought')}>
+      <Pressable
+        style={styles.fab}
+        onPress={() => navigation.navigate('AddThought', { category })}>
         <Text style={styles.fabText}>+</Text>
       </Pressable>
     </View>
@@ -34,7 +38,7 @@ export default function HomeScreen({ navigation, thoughts }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#21b6cab6',
+    backgroundColor: '#1a1d27',
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingTop: 60,
@@ -54,13 +58,14 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   listContent: {
-    paddingHorizontal: 20
+    paddingHorizontal: 20,
   },
   thoughtItem: {
     fontSize: 15,
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+    color: '#fff'
   },
   fab: {
     position: 'absolute',

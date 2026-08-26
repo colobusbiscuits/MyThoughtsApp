@@ -42,11 +42,11 @@ export default function DetailScreen({ route, thoughts, updateDetails }: Props) 
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 20 },
-    title: { fontSize: 20, fontWeight: '600', marginBottom: 12 },
+    container: { flex: 1, padding: 20 , backgroundColor: '#1a1d27'},
+    title: { fontSize: 20, fontWeight: '600', marginBottom: 12, color: '#fff'},
     detailsInput: {
         flex: 1,
         fontSize: 15,
-        color: '#222',
+        color: '#ffffff',
     },
 });
