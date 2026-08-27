@@ -111,6 +111,11 @@ export default function App() {
     );
   };
 
+  const deleteCategory = (categoryId: string) => {
+    setCategories((current) => current.filter((c) => c.id !== categoryId));
+    setThoughts((current) => current.filter((t) => t.categoryId !== categoryId));
+  }
+
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -186,8 +191,14 @@ export default function App() {
           {(props) => <AddThoughtScreen {...props} addThought={addThought} categories={categories} />}
         </Stack.Screen>
 
-        <Stack.Screen name="ManageCategories" options={{ title: 'Categories' }}>
-          {(props) => <ManageCategoriesScreen {...props} categories={categories} />}
+               <Stack.Screen name="ManageCategories" options={{ title: 'Categories' }}>
+          {(props) => (
+            <ManageCategoriesScreen
+              {...props}
+              categories={categories}
+              deleteCategory={deleteCategory}
+            />
+          )}
         </Stack.Screen>
 
         <Stack.Screen

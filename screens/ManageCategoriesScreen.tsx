@@ -1,13 +1,14 @@
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, Category } from './types';
 import { colors } from '../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ManageCategories'> & {
     categories: Category[];
+    deleteCategory: (categoryId: string) => void;
 };
 
-export default function ManageCategoriesScreen({ navigation, categories }: Props) {
+export default function ManageCategoriesScreen({ navigation, categories, deleteCategory }: Props) {
     return (
         <View style={styles.container}>
             <FlatList
@@ -16,9 +17,20 @@ export default function ManageCategoriesScreen({ navigation, categories }: Props
                 contentContainerStyle={styles.listContent}
                 renderItem={({ item }) => (
                     <Pressable
-                        style={styles.row}
-                        onPress={() => navigation.navigate('EditCategory', { categoryId: item.id })}
-                    >
+                            style={({ pressed }) => [styles.row, pressed && { backgroundColor: `${item.color}26` }]}
+                            onPress={() => navigation.navigate('EditCategory', { categoryId: item.id })}
+                            onLongPress={() => {
+                                Alert.alert(
+                                    'Delete category',
+                                    `Delete "${item.name}"? This can't be undone.`,
+                                    [
+                                        { text: 'Cancel', style: 'cancel' },
+                                        { text: 'Delete', style: 'destructive', onPress: () => deleteCategory(item.id) },
+                                    ]
+                                );
+                            }}
+                            delayLongPress={400}
+                        >
                         <View style={[styles.dot, { backgroundColor: item.color }]} />
                         <Text style={styles.rowText}>{item.name}</Text>
                     </Pressable>

@@ -1,4 +1,4 @@
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, Category, Thought } from './types';
@@ -58,7 +58,7 @@ export default function HomeScreen({ navigation, route, thoughts, categories, re
             <StatusBar style="light"/>
 
                     </View>
-    );
+        );
 }
 
 const styles = StyleSheet.create({
