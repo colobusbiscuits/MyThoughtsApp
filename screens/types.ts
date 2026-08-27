@@ -1,17 +1,23 @@
 // screens/types.ts
 
-export type Category = 'Ideas' | 'Thoughts' | 'Recipes' | 'Notes' | 'Questions'
+export type Category = {
+    id: string;
+    name: string;
+    color: string;
+}
 
 export type Thought = {
     id: string;
     title: string;
     details: string;
-    category: Category;
+    categoryId: string;
 };
 
 export type RootStackParamList = {
     Landing: undefined
-    CategoryList: { category: Category};
+    CategoryList: { categoryId: string};
     Detail: { thoughtId: string };
-    AddThought: { category: Category};
+    AddThought: { categoryId: string};
+    ManageCategories: undefined;
+    EditCategory: { categoryId?: string };
 };
