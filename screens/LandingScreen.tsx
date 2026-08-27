@@ -34,7 +34,7 @@ export default function LandingScreen({ navigation, categories, thoughts }: Prop
 
 const styles = StyleSheet.create({
     scrollView: { flex: 1, backgroundColor: colors.background },
-    container: { flex: 1, padding: 20, justifyContent: 'center', backgroundColor: colors.background },
+    container: { flexGrow: 1, padding: 20, justifyContent: 'center' },
     card: {
         borderRadius: 13, paddingVertical: 10, alignItems: 'center', marginBottom: 15, marginLeft: 15, marginRight: 15,
         borderBottomWidth: 6, borderLeftWidth: 6, borderColor: '#ffffff93',
