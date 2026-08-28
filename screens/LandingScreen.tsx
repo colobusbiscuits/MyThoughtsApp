@@ -85,7 +85,7 @@ export default function LandingScreen({ navigation, categories, thoughts, reorde
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.listContent}
                 renderItem={renderRow}
-                animationConfig={{ damping: 30, stiffness: 600 }}
+                animationConfig={{ damping: 30, stiffness: 300 }}
                 onDragEnd={({ data }) =>{
                  const newOrder = featured ? [featured, ...data] : data;
                  setOrder(newOrder);
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     },
     rowLifted: {
         shadowColor: '#ffffff',
-        shadowOffset: { width: 0, height: 8 },
+        shadowOffset: { width: 3, height: 8 },
         shadowRadius: 12,
         elevation: 11,
     },
