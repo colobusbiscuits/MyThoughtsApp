@@ -38,6 +38,8 @@ export default function HomeScreen({ navigation, route, thoughts, categories, re
                             style={({ pressed }) => [styles.deleteX, pressed && styles.deleteXPressed]}
                             onPress={() => deleteThought(item.id)}
                             hitSlop={10}
+                            accessibilityLabel="Delete thought"
+                            accessibilityRole="button"
                         >
                             <Text style={styles.deleteXText}>×</Text>
                         </Pressable>
@@ -52,6 +54,8 @@ export default function HomeScreen({ navigation, route, thoughts, categories, re
             <Pressable
                 style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
                 onPress={() => navigation.navigate('AddThought', { categoryId })}
+                accessibilityLabel="Add new thought"
+                accessibilityRole="button"
             >
                 <Text style={styles.fabText}>+</Text>
             </Pressable>

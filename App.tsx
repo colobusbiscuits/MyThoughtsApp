@@ -11,6 +11,7 @@ import AddThoughtScreen from './screens/AddThoughtScreen';
 import ManageCategoriesScreen from './screens/ManageCategoriesScreen';
 import EditCategoryScreen from './screens/EditCategoryScreen';
 import { colors } from './theme';
+import { singularize } from './screens/utils';
 import type { RootStackParamList, Thought, Category } from './screens/types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -59,10 +60,12 @@ export default function App() {
     );
   }
 
-  const addThought = (title: string, categoryId: string) => {
+  const addThought = (text: string, categoryId: string) => {
+    const firstLine = text.split('\n')[0].trim();
+    const title = firstLine ? firstLine.slice(0, 60) : 'Untitled';
     setThoughts((current) => [
       ...current,
-      { id: Date.now().toString(), title, details: '', categoryId },
+      { id: Date.now().toString(), title, details: text, categoryId },
     ]);
   };
 
@@ -123,7 +126,7 @@ export default function App() {
         screenOptions={{
           headerStyle: { backgroundColor: colors.background },
           headerTintColor: colors.text,
-          headerTitleStyle: { fontWeight: '700', fontSize: 20 },
+          headerTitleStyle: { fontWeight: '700', fontSize: 22 },
           headerTitleAlign: 'center',
           headerShadowVisible: false,
         }}
@@ -134,7 +137,7 @@ export default function App() {
             title: 'Thought Hub',
             headerRight: () => (
               <Pressable onPress={() => navigation.navigate('ManageCategories')} hitSlop={10}>
-                <Text style={{ color: colors.text, fontWeight: '600' }}>Edit</Text>
+                <Text style={{ color: colors.text, fontWeight: '600' }}>Categories</Text>
               </Pressable>
             ),
           })}
@@ -184,7 +187,7 @@ export default function App() {
           name="AddThought"
           options={({ route }) => {
             const category = categories.find((c) => c.id === route.params.categoryId);
-            const label = category ? category.name.slice(0, -1) : 'Thought';
+            const label = category ? singularize(category.name) : 'Thought';
             return { title: `New ${label}` };
           }}
         >
@@ -196,6 +199,7 @@ export default function App() {
             <ManageCategoriesScreen
               {...props}
               categories={categories}
+              thoughts={thoughts}
               deleteCategory={deleteCategory}
             />
           )}

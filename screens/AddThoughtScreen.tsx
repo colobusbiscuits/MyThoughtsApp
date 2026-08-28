@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { StatusBar } from 'expo-status-bar';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, Category } from './types';
 import { colors } from '../theme';
+import { singularize} from './utils';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AddThought'> & {
     addThought: (title: string, categoryId: string) => void;
@@ -21,10 +23,10 @@ export default function AddThoughtScreen({ navigation, route, addThought, catego
         navigation.goBack();
     };
 
-    const label = category ? category.name.slice(0, -1).toLowerCase() : 'thought';
+    const label = category ? singularize(category.name).toLowerCase() : 'thought';
 
     return (
-        <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <TextInput
                 value={text}
                 onChangeText={setText}
@@ -45,6 +47,7 @@ export default function AddThoughtScreen({ navigation, route, addThought, catego
             >
                 <Text style={[styles.saveButtonText, !canSave && styles.saveButtonTextDisabled]}>Save</Text>
             </Pressable>
+            <StatusBar style="light"/>
         </KeyboardAvoidingView>
     );
 }
