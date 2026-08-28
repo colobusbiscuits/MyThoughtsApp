@@ -26,7 +26,7 @@ export default function HomeScreen({ navigation, route, thoughts, categories, re
                 contentContainerStyle={styles.listContent}
                 ListEmptyComponent={
                     <Text style={styles.emptyText}>
-                        No {(category?.name ?? 'thoughts').toLowerCase()} here yet. Tap + to add one.
+                        EMPTY! Tap + to add.
                     </Text>
                 }
                 renderItem={({ item }) => (

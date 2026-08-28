@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, type Theme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LandingScreen from './screens/LandingScreen';
 import HomeScreen from './screens/HomeScreen';
@@ -12,11 +12,25 @@ import ManageCategoriesScreen from './screens/ManageCategoriesScreen';
 import EditCategoryScreen from './screens/EditCategoryScreen';
 import { colors } from './theme';
 import { singularize } from './screens/utils';
+import * as SystemUI from 'expo-system-ui';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import type { RootStackParamList, Thought, Category } from './screens/types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const THOUGHTS_KEY = 'thoughts';
 const CATEGORIES_KEY = 'categories';
+const navigationTheme: Theme = {
+  ...DefaultTheme,
+  dark: true,
+  colors: {
+    ...DefaultTheme.colors,
+    background: colors.background,
+    card: colors.background,
+    text: colors.text,
+    border: colors.border,
+    primary: colors.accent,
+  },
+};
 
 export default function App() {
   const [thoughts, setThoughts] = useState<Thought[]>([]);
@@ -46,6 +60,10 @@ export default function App() {
     if (!loaded) return;
     AsyncStorage.setItem(THOUGHTS_KEY, JSON.stringify(thoughts));
   }, [thoughts, loaded]);
+
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(colors.background);
+  }, []);
 
   useEffect(() => {
     if (!loaded) return;
@@ -104,126 +122,136 @@ export default function App() {
     if (undoTimer.current) clearTimeout(undoTimer.current);
   };
 
-  const addCategory = (name: string, color: string) => {
-    setCategories((current) => [...current, { id: Date.now().toString(), name, color }]);
+ const addCategory = (name: string, color: string, image?: string) => {
+    setCategories((current) => [...current, { id: Date.now().toString(), name, color, image }]);
   };
 
-  const updateCategory = (categoryId: string, name: string, color: string) => {
+  const updateCategory = (categoryId: string, name: string, color: string, image?: string) => {
     setCategories((current) =>
-      current.map((c) => (c.id === categoryId ? { ...c, name, color } : c))
+      current.map((c) => (c.id === categoryId ? { ...c, name, color, image } : c))
     );
   };
-
   const deleteCategory = (categoryId: string) => {
     setCategories((current) => current.filter((c) => c.id !== categoryId));
     setThoughts((current) => current.filter((t) => t.categoryId !== categoryId));
   }
+  
+  const reorderCategories = (newOrder: Category[]) => {
+    setCategories(newOrder);
+  };
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="Landing"
-        screenOptions={{
-          headerStyle: { backgroundColor: colors.background },
-          headerTintColor: colors.text,
-          headerTitleStyle: { fontWeight: '700', fontSize: 22 },
-          headerTitleAlign: 'center',
-          headerShadowVisible: false,
-        }}
-      >
-        <Stack.Screen
-          name="Landing"
-          options={({ navigation }) => ({
-            title: 'Thought Hub',
-            headerRight: () => (
-              <Pressable onPress={() => navigation.navigate('ManageCategories')} hitSlop={10}>
-                <Text style={{ color: colors.text, fontWeight: '600' }}>Categories</Text>
-              </Pressable>
-            ),
-          })}
-        >
-          {(props) => <LandingScreen {...props} categories={categories} thoughts={thoughts} />}
-        </Stack.Screen>
-
-        <Stack.Screen
-          name="CategoryList"
-          options={({ route }) => {
-            const category = categories.find((c) => c.id === route.params.categoryId);
-            return { title: category ? category.name : 'Category' };
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NavigationContainer theme={navigationTheme}>
+        <Stack.Navigator
+          initialRouteName="Landing"
+          screenOptions={{
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerTitleStyle: { fontWeight: '700', fontSize: 22 },
+            headerTitleAlign: 'center',
+            headerShadowVisible: false,
+            contentStyle: { backgroundColor: colors.background }
           }}
         >
-          {(props) => (
-            <HomeScreen
-              {...props}
-              thoughts={thoughts}
-              categories={categories}
-              recentlyDeleted={recentlyDeleted}
-              undoDelete={undoDelete}
-              deleteThought={deleteThought}
-            />
-          )}
-        </Stack.Screen>
+          <Stack.Screen
+            name="Landing"
+            options={({ navigation }) => ({
+              title: 'Thought Hub',
+              headerRight: () => (
+                <Pressable onPress={() => navigation.navigate('ManageCategories')} hitSlop={10}>
+                  <Text style={{ color: colors.text, fontWeight: '600' }}>Categories</Text>
+                </Pressable>
+              ),
+            })}
+          >
+            {(props) => <LandingScreen {...props} 
+            categories={categories} 
+            thoughts={thoughts}
+            reorderCategories={reorderCategories} 
+            />}
+          </Stack.Screen>
 
-        <Stack.Screen
-          name="Detail"
-          options={({ route }) => {
-            const thought = thoughts.find((t) => t.id === route.params.thoughtId);
-            const category = thought ? categories.find((c) => c.id === thought.categoryId) : null;
-            return { title: category ? category.name : 'Thought' };
-          }}
-        >
-          {(props) => (
-            <DetailScreen
-              {...props}
-              thoughts={thoughts}
-              categories={categories}
-              updateDetails={updateDetails}
-              updateTitle={updateTitle}
-              moveThought={moveThought}
-            />
-          )}
-        </Stack.Screen>
-        <Stack.Screen
-          name="AddThought"
-          options={({ route }) => {
-            const category = categories.find((c) => c.id === route.params.categoryId);
-            const label = category ? singularize(category.name) : 'Thought';
-            return { title: `New ${label}` };
-          }}
-        >
-          {(props) => <AddThoughtScreen {...props} addThought={addThought} categories={categories} />}
-        </Stack.Screen>
+          <Stack.Screen
+            name="CategoryList"
+            options={({ route }) => {
+              const category = categories.find((c) => c.id === route.params.categoryId);
+              return { title: category ? category.name : 'Category' };
+            }}
+          >
+            {(props) => (
+              <HomeScreen
+                {...props}
+                thoughts={thoughts}
+                categories={categories}
+                recentlyDeleted={recentlyDeleted}
+                undoDelete={undoDelete}
+                deleteThought={deleteThought}
+              />
+            )}
+          </Stack.Screen>
 
-               <Stack.Screen name="ManageCategories" options={{ title: 'Categories' }}>
-          {(props) => (
-            <ManageCategoriesScreen
-              {...props}
-              categories={categories}
-              thoughts={thoughts}
-              deleteCategory={deleteCategory}
-            />
-          )}
-        </Stack.Screen>
+          <Stack.Screen
+            name="Detail"
+            options={({ route }) => {
+              const thought = thoughts.find((t) => t.id === route.params.thoughtId);
+              const category = thought ? categories.find((c) => c.id === thought.categoryId) : null;
+              return { title: category ? category.name : 'Thought' };
+            }}
+          >
+            {(props) => (
+              <DetailScreen
+                {...props}
+                thoughts={thoughts}
+                categories={categories}
+                updateDetails={updateDetails}
+                updateTitle={updateTitle}
+                moveThought={moveThought}
+              />
+            )}
+          </Stack.Screen>
+          <Stack.Screen
+            name="AddThought"
+            options={({ route }) => {
+              const category = categories.find((c) => c.id === route.params.categoryId);
+              const label = category ? singularize(category.name) : 'Thought';
+              return { title: `New` };
+            }}
+          >
+            {(props) => <AddThoughtScreen {...props} addThought={addThought} categories={categories} />}
+          </Stack.Screen>
 
-        <Stack.Screen
-          name="EditCategory"
-          options={({ route }) => ({ title: route.params.categoryId ? 'Edit Category' : 'New Category' })}
-        >
-          {(props) => (
-            <EditCategoryScreen
-              {...props}
-              categories={categories}
-              addCategory={addCategory}
-              updateCategory={updateCategory}
-            />
-          )}
-        </Stack.Screen>
-      </Stack.Navigator>
-    </NavigationContainer>
+          <Stack.Screen name="ManageCategories" options={{ title: 'Categories' }}>
+            {(props) => (
+              <ManageCategoriesScreen
+                {...props}
+                categories={categories}
+                thoughts={thoughts}
+                deleteCategory={deleteCategory}
+              />
+            )}
+          </Stack.Screen>
+
+          <Stack.Screen
+            name="EditCategory"
+            options={({ route }) => ({ title: route.params.categoryId ? 'Edit Category' : 'New Category' })}
+          >
+            {(props) => (
+              <EditCategoryScreen
+                {...props}
+                categories={categories}
+                addCategory={addCategory}
+                updateCategory={updateCategory}
+              />
+            )}
+          </Stack.Screen>
+        </Stack.Navigator>
+      </NavigationContainer>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
-    loadingContainer: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
-    loadingText: { color: colors.text, fontSize: 16 },
+  loadingContainer: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
+  loadingText: { color: colors.text, fontSize: 16 },
 });

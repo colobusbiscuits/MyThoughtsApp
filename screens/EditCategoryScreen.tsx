@@ -1,5 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import {
+    Alert,
+    Image,
     PanResponder,
     Pressable,
     ScrollView,
@@ -8,31 +10,40 @@ import {
     TextInput,
     View,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { Directory, File, Paths } from 'expo-file-system';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, Category } from './types';
 import { colors } from '../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EditCategory'> & {
     categories: Category[];
-    addCategory: (name: string, color: string) => void;
-    updateCategory: (categoryId: string, name: string, color: string) => void;
+    addCategory: (name: string, color: string, image?: string) => void;
+    updateCategory: (categoryId: string, name: string, color: string, image?: string) => void;
 };
 
 const DEFAULT_COLOR = '#7C9CFF';
+const PHOTOS_DIR = new Directory(Paths.document, 'category-photos');
 
 export default function EditCategoryScreen({ navigation, route, categories, addCategory, updateCategory }: Props) {
     const { categoryId } = route.params;
     const existing = categoryId ? categories.find((c) => c.id === categoryId) : undefined;
     const [name, setName] = useState(existing?.name ?? '');
     const [color, setColor] = useState(existing?.color ?? DEFAULT_COLOR);
+    const [image, setImage] = useState<string | undefined>(existing?.image);
     const canSave = name.trim().length > 0;
 
-    const save = () => {
+    const handlePickPhoto = async () => {
+        const uri = await pickCategoryPhoto();
+        if (uri) setImage(uri);
+    }
+
+   const save = () => {
         if (!canSave) return;
         if (existing) {
-            updateCategory(existing.id, name.trim(), color);
+            updateCategory(existing.id, name.trim(), color, image);
         } else {
-            addCategory(name.trim(), color);
+            addCategory(name.trim(), color, image);
         }
         navigation.goBack();
     };
@@ -55,6 +66,26 @@ export default function EditCategoryScreen({ navigation, route, categories, addC
             <Text style={styles.label}>Color</Text>
             <ColorPicker value={color} onChange={setColor} />
 
+            <Text style={styles.label}>Photo (optional)</Text>
+            {image ? (
+                <View style={styles.photoRow}>
+                    <Image source={{ uri: image }} style={styles.photoPreview} />
+                    <Pressable
+                        onPress={() => setImage(undefined)}
+                        style={({ pressed }) => [styles.removePhotoButton, pressed && styles.saveButtonPressed]}
+                        >
+                            <Text style = {styles.removePhotoText}>Remove Photo</Text>
+                        </Pressable>
+                </View>
+            ) : (
+                <Pressable
+                onPress={handlePickPhoto}
+                style={({ pressed }) => [styles.choosePhotoButton, pressed && styles.saveButtonPressed]}
+                >
+                    <Text style={styles.choosePhotoText}>Choose Photo</Text>
+                </Pressable>
+            )}
+
             <Pressable
                 style={({ pressed }) => [
                     styles.saveButton,
@@ -70,6 +101,33 @@ export default function EditCategoryScreen({ navigation, route, categories, addC
             </Pressable>
         </ScrollView>
     );
+}
+
+async function pickCategoryPhoto(): Promise<string | null> {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+        Alert.alert('Permission needed', 'Allow photo library access to set a cateogry photo.')
+        return null;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [16, 9],
+        quality: 0.8,
+    });
+
+    if (result.canceled || !result.assets || result.assets.length === 0) return null;
+
+    if (!PHOTOS_DIR.exists) {
+        PHOTOS_DIR.create({ intermediates: true});
+    }
+
+    const sourceFile = new File(result.assets[0].uri);
+    const destFile = new File(PHOTOS_DIR, `${Date.now()}.jpg`);
+    sourceFile.copy(destFile);
+
+    return destFile.uri;
 }
 
 // ---------- Color picker ----------
@@ -374,6 +432,12 @@ const styles = StyleSheet.create({
     content: { padding: 20, paddingBottom: 40, flexGrow: 1 },
     input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 12, fontSize: 16, color: colors.text },
     label: { color: colors.textMuted, fontSize: 13, fontWeight: '600', marginTop: 20, marginBottom: 10 },
+    photoRow: { flexDirection: 'row', alignItems: 'center'},
+    photoPreview: { width: 64, height: 64, borderRadius: 10, marginRight: 12, borderWidth: 1, borderColor: colors.border},
+    choosePhotoButton: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingVertical: 12, alignItems: 'center' },
+    choosePhotoText: { color: colors.text, fontWeight: '600', fontSize: 15 },
+    removePhotoButton: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 14 },
+    removePhotoText: { color: colors.textMuted, fontWeight: '600', fontSize: 13 },
     saveButton: { marginTop: 24, backgroundColor: colors.accent, paddingVertical: 14, borderRadius: 8, alignItems: 'center' },
     saveButtonDisabled: { backgroundColor: colors.surface },
     saveButtonPressed: { backgroundColor: colors.accentPressed },

@@ -50,7 +50,7 @@ export default function DetailScreen({ route, thoughts, categories, updateDetail
             </ScrollView>
 
             <TextInput
-                value={thought.details}
+                
                 onChangeText={(text) => updateDetails(thought.id, text)}
                 placeholder="Add more thoughts..."
                 placeholderTextColor={colors.textMuted}

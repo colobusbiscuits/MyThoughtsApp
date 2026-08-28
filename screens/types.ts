@@ -4,7 +4,8 @@ export type Category = {
     id: string;
     name: string;
     color: string;
-}
+    image?: string;
+};
 
 export type Thought = {
     id: string;

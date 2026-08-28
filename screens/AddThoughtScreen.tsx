@@ -30,7 +30,7 @@ export default function AddThoughtScreen({ navigation, route, addThought, catego
             <TextInput
                 value={text}
                 onChangeText={setText}
-                placeholder={`New ${label}...`}
+                placeholder={`Get started..`}
                 placeholderTextColor={colors.textMuted}
                 style={styles.input}
                 multiline
